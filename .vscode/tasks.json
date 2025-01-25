@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "type": "shell",
+      "command": "${env:MSYS_HOME}\\msys2_shell",
+      "args": ["-defterm", "-here", "-no-start", "-mingw64", "-c", "make debug"]
+    }
+  ]
+}

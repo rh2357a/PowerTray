@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "name": "Win32",
+      "includePath": ["${env:MSYS_HOME}\\mingw64\\include"],
+      "defines": ["DEBUG", "UNICODE", "_UNICODE"],
+      "compilerPath": "${env:MSYS_HOME}\\mingw64\\bin\\g++.exe",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "windows-gcc-x64"
+    }
+  ],
+  "version": 4
+}
