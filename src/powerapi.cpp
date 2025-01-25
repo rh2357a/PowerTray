@@ -57,30 +57,28 @@ std::vector<PowerProfileNode> GetPowerProfiles()
     while (true)
     {
         DWORD guidBufferSize = 16;
-        UCHAR *guidBuffer = new UCHAR[16];
+        UCHAR guidBuffer[guidBufferSize];
+
         DWORD result = ::PowerEnumerate(nullptr, nullptr, nullptr, ACCESS_SCHEME, index, guidBuffer, &guidBufferSize);
-        if (result != ERROR_SUCCESS)
+        if (result == ERROR_SUCCESS)
         {
-            delete[] guidBuffer;
-            break;
+            GUID schemeGuid;
+            memcpy(&schemeGuid, guidBuffer, sizeof(GUID));
+
+            DWORD length = 0;
+            ::PowerReadFriendlyName(nullptr, &schemeGuid, nullptr, nullptr, nullptr, &length);
+
+            UCHAR nameBuffer[length];
+            ::PowerReadFriendlyName(nullptr, &schemeGuid, nullptr, nullptr, nameBuffer, &length);
+
+            std::wstring name;
+            name.assign((WCHAR *)nameBuffer);
+            nodes.push_back(PowerProfileNode(schemeGuid, name));
+            index++;
+            continue;
         }
 
-        GUID schemeGuid;
-        memcpy(&schemeGuid, guidBuffer, sizeof(GUID));
-
-        DWORD length = 0;
-        ::PowerReadFriendlyName(nullptr, &schemeGuid, nullptr, nullptr, nullptr, &length);
-
-        UCHAR *name = new UCHAR[length];
-        ::PowerReadFriendlyName(nullptr, &schemeGuid, nullptr, nullptr, name, &length);
-
-        std::wstring output;
-        output.assign((wchar_t *)name);
-        nodes.push_back(PowerProfileNode(schemeGuid, std::move(output)));
-        index++;
-
-        delete[] name;
-        delete[] guidBuffer;
+        break;
     }
 
     return nodes;

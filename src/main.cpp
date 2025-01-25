@@ -7,7 +7,7 @@
 #include "settings.h"
 #include "utils.h"
 
-#define APP_NAME L"PowerTray v1.3.0.0"
+#define APP_NAME L"PowerTray v1.3.0.1"
 
 #define MENU_POWER_MDOE_BEST_PERFORMANCE 1
 #define MENU_POWER_MDOE_BETTER_PERFORMANCE 2
@@ -75,7 +75,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     WNDCLASS wc = {};
     wc.lpfnWndProc = WindowProc;
     wc.hInstance = GetModuleHandle(nullptr);
-    wc.lpszClassName = TEXT("TrayAppClass");
+    wc.lpszClassName = L"PowerTrayClass";
     ::RegisterClass(&wc);
 
     HWND hwnd = ::CreateWindowEx(0, wc.lpszClassName, APP_NAME, 0, 0, 0, 0, 0, 0, 0, 0, wc.hInstance);
