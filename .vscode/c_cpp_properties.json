@@ -5,7 +5,7 @@
       "includePath": ["${env:MSYS2_HOME}\\mingw64\\include"],
       "defines": ["DEBUG", "UNICODE", "_UNICODE"],
       "compilerPath": "${env:MSYS2_HOME}\\mingw64\\bin\\g++.exe",
-      "cStandard": "c11",
+      "cStandard": "c17",
       "cppStandard": "c++17",
       "intelliSenseMode": "windows-gcc-x64"
     }

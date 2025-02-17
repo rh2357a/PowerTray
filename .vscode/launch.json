@@ -5,7 +5,7 @@
       "name": "Run Debug (mingw64)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}\\build\\debug\\${workspaceFolderBasename}.exe",
+      "program": "${workspaceFolder}\\build\\x64\\debug\\${workspaceFolderBasename}.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",

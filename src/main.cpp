@@ -3,11 +3,12 @@
 
 #include <shellapi.h>
 
+#include "resources.h"
 #include "powerapi.h"
 #include "settings.h"
 #include "utils.h"
 
-#define APP_NAME L"PowerTray v1.3.0.1"
+#define APP_NAME L"PowerTray v1.3.0.2"
 
 #define MENU_POWER_MDOE_BEST_PERFORMANCE 1
 #define MENU_POWER_MDOE_BETTER_PERFORMANCE 2
@@ -86,7 +87,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     nid.uID = 1;
     nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
     nid.uCallbackMessage = WM_APP;
-    nid.hIcon = ::LoadIcon(nullptr, IDI_APPLICATION);
+    nid.hIcon = (HICON)::LoadImage(::GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
     lstrcpyn(nid.szTip, APP_NAME, ARRAYSIZE(nid.szTip));
 
     ::Shell_NotifyIcon(NIM_ADD, &nid);
@@ -201,7 +202,8 @@ void OnTrayMenuSelected(int cmd)
         break;
 
     case MENU_PROFILE_EDIT:
-        STARTUPINFOA si = {sizeof(STARTUPINFOA)};
+        STARTUPINFOA si = {};
+        si.cb = sizeof(STARTUPINFOA);
         PROCESS_INFORMATION pi;
 
         auto cmdline = "control powercfg.cpl";
