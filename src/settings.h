@@ -4,4 +4,7 @@
 bool IsStartupEnabled();
 void SetStartupEnabled(bool isEnabled);
 
+bool IsPsrFeatureEnabled();
+void SetPsrFeatureEnabled(bool isEnabled);
+
 #endif

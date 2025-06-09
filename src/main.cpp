@@ -8,18 +8,21 @@
 #include "settings.h"
 #include "utils.h"
 
-#define APP_NAME L"PowerTray v1.3.0.2"
+extern "C" BOOL WINAPI IsUserAnAdmin();
+
+#define APP_NAME L"PowerTray v1.3.1.0"
 
 #define MENU_POWER_MDOE_BEST_PERFORMANCE 1
 #define MENU_POWER_MDOE_BETTER_PERFORMANCE 2
 #define MENU_POWER_MDOE_BEST_BATTERY 3
 
-#define MENU_STARTUP 4
+#define MENU_PSR_FEATURE 4
+#define MENU_STARTUP 5
 
-#define MENU_EXIT 5
+#define MENU_EXIT 6
 
-#define MENU_PROFILE_EDIT 6
-#define MENU_PROFILE_ITEM 7
+#define MENU_PROFILE_EDIT 7
+#define MENU_PROFILE_ITEM 8
 
 HMENU menu = nullptr;
 HMENU profileMenu = nullptr;
@@ -119,6 +122,9 @@ void OnCreateTrayMenu()
     ::AppendMenu(profileMenu, MF_SEPARATOR, 0, nullptr);
     ::AppendMenu(menu, MF_SEPARATOR, 0, nullptr);
 
+    ::AppendMenu(menu, MF_STRING, MENU_PSR_FEATURE, L"PSR 활성화");
+    ::AppendMenu(menu, MF_SEPARATOR, 0, nullptr);
+
     ::AppendMenu(menu, MF_STRING, MENU_STARTUP, L"Windows 시작 시 자동 실행");
     ::AppendMenu(menu, MF_SEPARATOR, 0, nullptr);
 
@@ -143,6 +149,9 @@ void OnUpdateTrayMenu()
         menu,
         MENU_POWER_MDOE_BEST_BATTERY,
         currentScheme == POWER_OVERLAY_SCHEME_BETTER_BATTERY ? MF_CHECKED : MF_UNCHECKED);
+
+    ::CheckMenuItem(menu, MENU_PSR_FEATURE, IsPsrFeatureEnabled() ? MF_CHECKED : MF_UNCHECKED);
+    ::EnableMenuItem(menu, MENU_PSR_FEATURE, IsUserAnAdmin() ? MF_ENABLED : MF_DISABLED);
 
     ::CheckMenuItem(menu, MENU_STARTUP, IsStartupEnabled() ? MF_CHECKED : MF_UNCHECKED);
 
@@ -191,6 +200,10 @@ void OnTrayMenuSelected(int cmd)
 
     case MENU_POWER_MDOE_BEST_BATTERY:
         PowerSetActiveOverlayScheme(POWER_OVERLAY_SCHEME_BETTER_BATTERY);
+        break;
+
+    case MENU_PSR_FEATURE:
+        SetPsrFeatureEnabled(!IsPsrFeatureEnabled());
         break;
 
     case MENU_STARTUP:

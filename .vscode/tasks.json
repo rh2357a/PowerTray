@@ -5,14 +5,7 @@
       "label": "Build",
       "type": "shell",
       "command": "${env:MSYS2_HOME}\\msys2_shell.cmd",
-      "args": [
-        "-defterm",
-        "-here",
-        "-no-start",
-        "-mingw64",
-        "-c",
-        "make mingw64"
-      ],
+      "args": ["-defterm", "-here", "-no-start", "-mingw64", "-c", "make"],
       "options": {
         "env": {
           "DEBUG": "1"

@@ -2,6 +2,7 @@ SOURCE_DIR := src
 BUILD_DIR  := build
 
 IGNORE_WARNINGS := -Wno-comment                        \
+                   -Wno-cast-function-type             \
                    -Wno-unused-parameter               \
                    -Wno-unused-variable                \
                    -Wno-unused-function
@@ -9,6 +10,7 @@ IGNORE_WARNINGS := -Wno-comment                        \
 LIB_INCLUDES :=
 LIB_SOURCES  :=
 
+CXX        := x86_64-w64-mingw32-g++
 CXXFLAGS   := -std=c++17 -mwindows -fpermissive \
               -Wall -Wextra $(IGNORE_WARNINGS)
 
@@ -27,7 +29,7 @@ CXXDEFINES   += RELEASE
 BUILD_TARGET := release
 endif
 
-BUILD_TARGET_DIR := $(BUILD_DIR)/$(ARCH)/$(BUILD_TARGET)
+BUILD_TARGET_DIR := $(BUILD_DIR)/$(BUILD_TARGET)
 TARGET           := $(BUILD_TARGET_DIR)/$(notdir $(CURDIR)).exe
 
 SOURCES         := $(shell find $(SOURCE_DIR) $(LIB_SOURCES) -type f -name "*.cpp")
@@ -37,12 +39,9 @@ OBJECTS         := $(SOURCES:%.cpp=$(BUILD_TARGET_DIR)/%.o) $(RC_OBJECT)
 DEFINES         := $(foreach define,$(CXXDEFINES),-D$(define))
 INCLUDES        := $(foreach include,$(LIB_INCLUDES),-I$(include))
 
-.PHONY: all mingw32 mingw64 clean
+.PHONY: all clean
 
-all: mingw64
-build: $(TARGET)
-mingw32: ; $(MAKE) build ARCH=x86 CXX=i686-w64-mingw32-g++
-mingw64: ; $(MAKE) build ARCH=x64 CXX=x86_64-w64-mingw32-g++
+all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
 	@mkdir -p $(BUILD_TARGET_DIR)
