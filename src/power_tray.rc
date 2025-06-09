@@ -5,24 +5,23 @@
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 1 VERSIONINFO
-    FILEVERSION     1, 3, 1, 0
-    FILEOS          VOS_NT_WINDOWS32
-    FILETYPE        VFT_APP
-    FILESUBTYPE     VFT2_UNKNOWN
-    FILEFLAGSMASK   0x00000000
-    FILEFLAGS       0x00000000
+    PRODUCTVERSION  APP_VERSION_INT
+    FILEVERSION     APP_VERSION_INT
+    FILEOS          0x40004
+    FILETYPE        0x1
+    FILESUBTYPE     0x0
 {
     BLOCK "StringFileInfo"
     {
-        BLOCK "041204b0"
+        BLOCK "040904E4"
         {
             VALUE "CompanyName", "rh2357a"
             VALUE "LegalTrademarks", "rh2357a"
             VALUE "LegalCopyright", "rh2357a"
-            VALUE "ProductName", "PowerTray"
-            VALUE "FileDescription", "PowerTray v1.3.1.0"
-            VALUE "ProductVersion", "1.3.1.0"
-            VALUE "OriginalFilename", "PowerTray.exe"
+            VALUE "ProductName", APP_NAME
+            VALUE "FileDescription", APP_DESCRIPTION
+            VALUE "ProductVersion", APP_VERSION
+            VALUE "OriginalFilename", APP_FILE_NAME
         }
     }
     BLOCK "VarFileInfo"

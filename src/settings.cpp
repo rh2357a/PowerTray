@@ -3,9 +3,10 @@
 
 #include <windows.h>
 
+#include "resources.h"
 #include "settings.h"
 
-static constexpr const auto REG_KEY_APP_NAME = L"PowerTray";
+static constexpr const auto REG_KEY_APP_NAME = APP_NAME;
 static constexpr const auto REG_KEY_PSR_FEATURE = L"DalPSRFeatureEnable";
 
 static constexpr const auto REG_PATH_STARTUP = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
