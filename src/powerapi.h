@@ -2,29 +2,46 @@
 #define POWERAPI_H
 
 #include <vector>
-#include <memory>
-#include <string>
-
-#include <powrprof.h>
 #include <initguid.h>
 
-struct PowerProfileNode
-{
-    GUID schemeGuid;
-    std::wstring friendlyName;
+#include "utils.h"
 
-    PowerProfileNode(const GUID &guid, const std::wstring &name) : schemeGuid(guid), friendlyName(name) {}
+struct power_profile_node
+{
+    GUID guid;
+    std::wstring friendly_name;
+
+    power_profile_node(const GUID &guid, const std::wstring &name) : guid(guid), friendly_name(name) {}
 };
 
-const GUID POWER_OVERLAY_SCHEME_BEST_PERFORMANCE = {0xded574b5, 0x45a0, 0x4f42, {0x87, 0x37, 0x46, 0x34, 0x5c, 0x09, 0xc2, 0x38}};
-const GUID POWER_OVERLAY_SCHEME_BETTER_PERFORMANCE = {0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
-const GUID POWER_OVERLAY_SCHEME_BETTER_BATTERY = {0x961cc777, 0x2547, 0x4f9d, {0x81, 0x74, 0x7d, 0x86, 0x18, 0x1b, 0x8a, 0x7a}};
+class power_api
+{
+public:
+    static const GUID SCHEME_BEST_PERFORMANCE;
+    static const GUID SCHEME_BETTER_PERFORMANCE;
+    static const GUID SCHEME_BETTER_BATTERY;
 
-void InitializePowerAPI();
-void DestroyPowerAPI();
-GUID PowerGetEffectiveOverlayScheme();
-void PowerSetActiveOverlayScheme(GUID guid);
-GUID *GetCurrentPowerProfile();
-std::vector<PowerProfileNode> GetPowerProfiles();
+private:
+    dll_wrapper dll;
+
+private:
+    power_api() : dll("powrprof.dll") {}
+
+private:
+    static dll_wrapper &self()
+    {
+        static power_api instance;
+        return instance.dll;
+    }
+
+public:
+    static GUID get_overlay_scheme();
+    static void set_overlay_scheme(GUID guid);
+
+public:
+    static std::vector<power_profile_node> get_power_profiles();
+    static GUID *get_power_profile();
+    static void set_power_profile(GUID guid);
+};
 
 #endif

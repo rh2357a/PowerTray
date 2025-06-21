@@ -2,22 +2,44 @@
 #define UTILS_H
 
 #include <string>
-#include <stringapiset.h>
+#include <unordered_map>
 
-static std::string WStringToString(const std::wstring &wstr)
-{
-    int bufferSize = ::WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, NULL, 0, NULL, NULL);
-    std::string str(bufferSize, 0);
-    ::WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &str[0], bufferSize, NULL, NULL);
-    return str;
-}
+#include <minwindef.h>
 
-static std::wstring StringToWString(const std::string &str)
+class windows
 {
-    int bufferSize = ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
-    std::wstring wstr(bufferSize, 0);
-    ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &wstr[0], bufferSize);
-    return wstr;
-}
+public:
+    static bool is_administrator_enabled();
+    static void exec(const std::string &cmd);
+};
+
+class strings
+{
+public:
+    static std::string to_string(const std::wstring &wstr);
+    static std::wstring to_wstring(const std::string &str);
+    static std::wstring to_wstring(const UCHAR *c_str);
+};
+
+class dll_wrapper
+{
+private:
+    HMODULE lib;
+    std::unordered_map<std::string, FARPROC> functions;
+
+public:
+    dll_wrapper(const std::string &lib_name);
+    ~dll_wrapper();
+
+public:
+    template <typename T>
+    T get_function(const std::string &name)
+    {
+        return reinterpret_cast<T>(get_function_impl(name));
+    }
+
+private:
+    FARPROC get_function_impl(const std::string &name);
+};
 
 #endif

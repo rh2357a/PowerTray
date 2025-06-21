@@ -5,10 +5,8 @@
 
 #include "resources.h"
 #include "powerapi.h"
-#include "settings.h"
+#include "app_settings.h"
 #include "utils.h"
-
-extern "C" BOOL WINAPI IsUserAnAdmin();
 
 #define MENU_POWER_MDOE_BEST_PERFORMANCE 1
 #define MENU_POWER_MDOE_BETTER_PERFORMANCE 2
@@ -25,7 +23,7 @@ extern "C" BOOL WINAPI IsUserAnAdmin();
 HMENU menu = nullptr;
 HMENU profileMenu = nullptr;
 
-std::vector<PowerProfileNode> recentProfiles;
+std::vector<power_profile_node> recentProfiles;
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
@@ -72,8 +70,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-    InitializePowerAPI();
-
     WNDCLASS wc = {};
     wc.lpfnWndProc = WindowProc;
     wc.hInstance = GetModuleHandle(nullptr);
@@ -102,8 +98,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     ::Shell_NotifyIcon(NIM_DELETE, &nid);
 
-    DestroyPowerAPI();
-
     return 0;
 }
 
@@ -131,27 +125,27 @@ void OnCreateTrayMenu()
 
 void OnUpdateTrayMenu()
 {
-    auto currentScheme = PowerGetEffectiveOverlayScheme();
+    auto currentScheme = power_api::get_overlay_scheme();
 
     ::CheckMenuItem(
         menu,
         MENU_POWER_MDOE_BEST_PERFORMANCE,
-        currentScheme == POWER_OVERLAY_SCHEME_BEST_PERFORMANCE ? MF_CHECKED : MF_UNCHECKED);
+        currentScheme == power_api::SCHEME_BEST_PERFORMANCE ? MF_CHECKED : MF_UNCHECKED);
 
     ::CheckMenuItem(
         menu,
         MENU_POWER_MDOE_BETTER_PERFORMANCE,
-        currentScheme == POWER_OVERLAY_SCHEME_BETTER_PERFORMANCE ? MF_CHECKED : MF_UNCHECKED);
+        currentScheme == power_api::SCHEME_BETTER_PERFORMANCE ? MF_CHECKED : MF_UNCHECKED);
 
     ::CheckMenuItem(
         menu,
         MENU_POWER_MDOE_BEST_BATTERY,
-        currentScheme == POWER_OVERLAY_SCHEME_BETTER_BATTERY ? MF_CHECKED : MF_UNCHECKED);
+        currentScheme == power_api::SCHEME_BETTER_BATTERY ? MF_CHECKED : MF_UNCHECKED);
 
-    ::CheckMenuItem(menu, MENU_PSR_FEATURE, IsPsrFeatureEnabled() ? MF_CHECKED : MF_UNCHECKED);
-    ::EnableMenuItem(menu, MENU_PSR_FEATURE, IsUserAnAdmin() ? MF_ENABLED : MF_DISABLED);
+    ::CheckMenuItem(menu, MENU_PSR_FEATURE, app_settings::is_psr_enabled() ? MF_CHECKED : MF_UNCHECKED);
+    ::EnableMenuItem(menu, MENU_PSR_FEATURE, windows::is_administrator_enabled() ? MF_ENABLED : MF_DISABLED);
 
-    ::CheckMenuItem(menu, MENU_STARTUP, IsStartupEnabled() ? MF_CHECKED : MF_UNCHECKED);
+    ::CheckMenuItem(menu, MENU_STARTUP, app_settings::is_startup_enabled() ? MF_CHECKED : MF_UNCHECKED);
 
     int i = 0;
     for (auto &scheme : recentProfiles)
@@ -160,16 +154,16 @@ void OnUpdateTrayMenu()
         i++;
     }
 
-    recentProfiles = GetPowerProfiles();
-    auto currentProfileScheme = *GetCurrentPowerProfile();
+    recentProfiles = power_api::get_power_profiles();
+    auto currentProfileScheme = *power_api::get_power_profile();
 
     i = 0;
     for (auto &scheme : recentProfiles)
     {
-        auto name = scheme.friendlyName.c_str();
+        auto name = scheme.friendly_name.c_str();
         ::AppendMenu(
             profileMenu,
-            MF_STRING | (currentProfileScheme == scheme.schemeGuid ? MF_CHECKED : MF_UNCHECKED),
+            MF_STRING | (currentProfileScheme == scheme.guid ? MF_CHECKED : MF_UNCHECKED),
             MENU_PROFILE_ITEM + i,
             name);
         i++;
@@ -182,30 +176,30 @@ void OnTrayMenuSelected(int cmd)
     {
         int index = cmd - MENU_PROFILE_ITEM;
         auto scheme = recentProfiles[index];
-        ::PowerSetActiveScheme(nullptr, &scheme.schemeGuid);
+        power_api::set_power_profile(scheme.guid);
         return;
     }
 
     switch (cmd)
     {
     case MENU_POWER_MDOE_BEST_PERFORMANCE:
-        PowerSetActiveOverlayScheme(POWER_OVERLAY_SCHEME_BEST_PERFORMANCE);
+        power_api::set_overlay_scheme(power_api::SCHEME_BEST_PERFORMANCE);
         break;
 
     case MENU_POWER_MDOE_BETTER_PERFORMANCE:
-        PowerSetActiveOverlayScheme(POWER_OVERLAY_SCHEME_BETTER_PERFORMANCE);
+        power_api::set_overlay_scheme(power_api::SCHEME_BETTER_PERFORMANCE);
         break;
 
     case MENU_POWER_MDOE_BEST_BATTERY:
-        PowerSetActiveOverlayScheme(POWER_OVERLAY_SCHEME_BETTER_BATTERY);
+        power_api::set_overlay_scheme(power_api::SCHEME_BETTER_BATTERY);
         break;
 
     case MENU_PSR_FEATURE:
-        SetPsrFeatureEnabled(!IsPsrFeatureEnabled());
+        app_settings::set_psr_enabled(!app_settings::is_psr_enabled());
         break;
 
     case MENU_STARTUP:
-        SetStartupEnabled(!IsStartupEnabled());
+        app_settings::set_startup_enabled(!app_settings::is_startup_enabled());
         break;
 
     case MENU_EXIT:
@@ -213,16 +207,7 @@ void OnTrayMenuSelected(int cmd)
         break;
 
     case MENU_PROFILE_EDIT:
-        STARTUPINFOA si = {};
-        si.cb = sizeof(STARTUPINFOA);
-        PROCESS_INFORMATION pi;
-
-        auto cmdline = "control powercfg.cpl";
-        if (CreateProcessA(nullptr, (LPSTR)cmdline, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi))
-        {
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-        }
+        windows::exec("control powercfg.cpl");
         break;
     }
 }
