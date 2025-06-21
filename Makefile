@@ -14,7 +14,7 @@ CXX        := x86_64-w64-mingw32-g++
 CXXFLAGS   := -std=c++17 -mwindows -fpermissive \
               -Wall -Wextra $(IGNORE_WARNINGS)
 
-CXXDEFINES := UNICODE _UNICODE _APP_NAME="\"$(notdir $(CURDIR))\"" _APP_FILE_NAME="\"$(notdir $(CURDIR)).exe\""
+CXXDEFINES := UNICODE _UNICODE
 
 LDFLAGS    := -static -static-libgcc -static-libstdc++                  \
               -lmsvcrt -lcomdlg32 -lgdi32 -luser32 -lshell32 -lpowrprof
@@ -33,6 +33,7 @@ BUILD_TARGET_DIR := $(BUILD_DIR)/$(BUILD_TARGET)
 TARGET           := $(BUILD_TARGET_DIR)/$(notdir $(CURDIR)).exe
 
 SOURCES         := $(shell find $(SOURCE_DIR) $(LIB_SOURCES) -type f -name "*.cpp")
+HEADERS         := $(shell find $(SOURCE_DIR) $(LIB_SOURCES) -type f -name "*.h")
 RC_FILE         := $(shell find $(SOURCE_DIR) $(LIB_SOURCES) -type f -name "*.rc")
 RC_OBJECT       := $(RC_FILE:%.rc=$(BUILD_TARGET_DIR)/%.o)
 OBJECTS         := $(SOURCES:%.cpp=$(BUILD_TARGET_DIR)/%.o) $(RC_OBJECT)
@@ -43,10 +44,10 @@ INCLUDES        := $(foreach include,$(LIB_INCLUDES),-I$(include))
 
 all: $(TARGET)
 
-$(TARGET): $(OBJECTS)
+$(TARGET): $(OBJECTS) $(HEADERS)
 	@mkdir -p $(BUILD_TARGET_DIR)
 	@mkdir -p $(shell dirname $@)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJECTS) $(LDFLAGS)
 
 $(BUILD_TARGET_DIR)/%.o: %.cpp
 	@mkdir -p $(BUILD_TARGET_DIR)
