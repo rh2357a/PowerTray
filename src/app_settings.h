@@ -1,5 +1,5 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#ifndef APP_SETTINGS_H
+#define APP_SETTINGS_H
 
 class app_settings
 {
