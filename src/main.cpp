@@ -8,12 +8,12 @@
 #include "app_settings.h"
 #include "utils.h"
 
-#define MENU_POWER_MDOE_BEST_PERFORMANCE 1
+#define MENU_POWER_MDOE_BEST_PERFORMANCE   1
 #define MENU_POWER_MDOE_BETTER_PERFORMANCE 2
-#define MENU_POWER_MDOE_BEST_BATTERY 3
+#define MENU_POWER_MDOE_BEST_BATTERY       3
 
 #define MENU_PSR_FEATURE 4
-#define MENU_STARTUP 5
+#define MENU_STARTUP     5
 
 #define MENU_EXIT 6
 

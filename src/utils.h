@@ -8,14 +8,14 @@
 
 class windows
 {
-public:
+  public:
     static bool is_administrator_enabled();
     static void exec(const std::string &cmd);
 };
 
 class strings
 {
-public:
+  public:
     static std::string to_string(const std::wstring &wstr);
     static std::wstring to_wstring(const std::string &str);
     static std::wstring to_wstring(const UCHAR *c_str);
@@ -23,22 +23,22 @@ public:
 
 class dll_wrapper
 {
-private:
+  private:
     HMODULE lib;
     std::unordered_map<std::string, FARPROC> functions;
 
-public:
+  public:
     dll_wrapper(const std::string &lib_name);
     ~dll_wrapper();
 
-public:
+  public:
     template <typename T>
     T get_function(const std::string &name)
     {
         return reinterpret_cast<T>(get_function_impl(name));
     }
 
-private:
+  private:
     FARPROC get_function_impl(const std::string &name);
 };
 
