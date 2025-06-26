@@ -30,4 +30,4 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
     }
 }
 
-IDI_APP_ICON ICON "../res/app_icon.ico"
+IDI_APP_ICON ICON "app.ico"

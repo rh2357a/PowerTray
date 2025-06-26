@@ -1,6 +1,4 @@
-// 정렬 고정: 항상 먼저 정의되어 있어야 함.
 #include <windows.h>
-
 #include <shellapi.h>
 
 #include "resources.h"
