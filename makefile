@@ -14,14 +14,15 @@ TOUCH   := touch
 
 ################################################################################
 
-CXXFLAGS := -std=c++17 -mwindows -fpermissive -MMD -MP -Wall -Wextra \
+CXXFLAGS := -std=c++17 -fpermissive -MMD -MP \
+            -Wall -Wextra \
             -Wno-cast-function-type \
             -Wno-unused-variable
 
 CXXDEFINES  := -DUNICODE -D_UNICODE
 CXXINCLUDES := -Iinclude
 
-LDFLAGS := -static -static-libgcc -static-libstdc++ \
+LDFLAGS := -static -static-libgcc -static-libstdc++ -mwindows \
            -lmsvcrt -lcomdlg32 -lgdi32 -luser32 -lshell32 -lpowrprof
 
 ifeq ($(DEBUG), 1)

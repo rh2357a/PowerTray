@@ -15,9 +15,9 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
     {
         BLOCK "040904E4"
         {
-            VALUE "CompanyName", "rh2357a"
-            VALUE "LegalTrademarks", "rh2357a"
-            VALUE "LegalCopyright", "rh2357a"
+            VALUE "CompanyName", APP_AUTHOR
+            VALUE "LegalTrademarks", APP_AUTHOR
+            VALUE "LegalCopyright", APP_AUTHOR
             VALUE "ProductName", APP_NAME
             VALUE "FileDescription", APP_DESCRIPTION
             VALUE "ProductVersion", APP_VERSION

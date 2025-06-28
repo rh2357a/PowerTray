@@ -153,7 +153,7 @@ void OnUpdateTrayMenu()
     }
 
     recentProfiles = power_api::get_power_profiles();
-    auto currentProfileScheme = *power_api::get_power_profile();
+    auto currentProfileScheme = power_api::get_power_profile();
 
     i = 0;
     for (auto &scheme : recentProfiles)

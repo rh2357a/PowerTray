@@ -28,7 +28,7 @@ class power_api
     power_api() : dll("powrprof.dll") {}
 
   private:
-    static dll_wrapper &self()
+    static dll_wrapper &get_dll()
     {
         static power_api instance;
         return instance.dll;
@@ -40,7 +40,7 @@ class power_api
 
   public:
     static std::vector<power_profile_node> get_power_profiles();
-    static GUID *get_power_profile();
+    static GUID get_power_profile();
     static void set_power_profile(GUID guid);
 };
 
