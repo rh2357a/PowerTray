@@ -13,6 +13,7 @@ BraceWrapping:
   AfterEnum: true
   AfterStruct: true
   AfterClass: true
+  BeforeElse: true
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false

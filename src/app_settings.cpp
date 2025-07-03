@@ -36,7 +36,8 @@ void app_settings::set_startup_enabled(bool enabled)
         wchar_t filename[MAX_PATH];
         auto len = ::GetModuleFileName(nullptr, filename, sizeof(filename));
         ::RegSetValueEx(key, REG_KEY_APP_NAME, 0, REG_SZ, (const BYTE *)filename, len * sizeof(wchar_t));
-    } else
+    }
+    else
     {
         ::RegDeleteValue(key, REG_KEY_APP_NAME);
     }
