@@ -1,45 +1,48 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <string>
-#include <unordered_map>
-
 #include <minwindef.h>
 
-class windows
+#include <string>
+#include <span>
+
+namespace utils::strings {
+
+std::string to_string(const std::wstring &wstr);
+std::wstring to_wstring(const std::string &str);
+std::wstring to_wstring(const UCHAR *c_str);
+
+void string_copy(std::span<CHAR> dest, const std::string &str);
+void wstring_copy(std::span<WCHAR> dest, const std::wstring &str);
+
+} // namespace utils::strings
+
+namespace utils {
+
+class dll
 {
-  public:
-    static bool is_administrator_enabled();
-    static void exec(const std::string &cmd);
+private:
+	static bool s_init;
+
+public:
+	template <typename _FuncType>
+	static _FuncType get(const std::string &dll_name, const std::string &func_name)
+	{
+		if (!s_init)
+		{
+			atexit(free);
+			s_init = true;
+		}
+
+		const auto &inst = get_func_inst(dll_name, func_name);
+		return reinterpret_cast<_FuncType>(inst);
+	}
+
+private:
+	static FARPROC get_func_inst(const std::string &dll_name, const std::string &func_name);
+	static void free();
 };
 
-class strings
-{
-  public:
-    static std::string to_string(const std::wstring &wstr);
-    static std::wstring to_wstring(const std::string &str);
-    static std::wstring to_wstring(const UCHAR *c_str);
-};
-
-class dll_wrapper
-{
-  private:
-    HMODULE lib;
-    std::unordered_map<std::string, FARPROC> functions;
-
-  public:
-    dll_wrapper(const std::string &lib_name);
-    ~dll_wrapper();
-
-  public:
-    template <typename T>
-    T get_function(const std::string &name)
-    {
-        return reinterpret_cast<T>(get_function_impl(name));
-    }
-
-  private:
-    FARPROC get_function_impl(const std::string &name);
-};
+} // namespace utils
 
 #endif

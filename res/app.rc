@@ -1,12 +1,12 @@
-#include <windows.h>
 #include "resources.h"
+#include <windows.h>
 
 #pragma code_page(65001)
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-    PRODUCTVERSION  APP_VERSION_INT
-    FILEVERSION     APP_VERSION_INT
 VS_VERSION_INFO VERSIONINFO
+    PRODUCTVERSION  APP_VERSION_RES
+    FILEVERSION     APP_VERSION_RES
     FILEOS          0x40004
     FILETYPE        0x1
     FILESUBTYPE     0x0
@@ -21,7 +21,7 @@ VS_VERSION_INFO VERSIONINFO
             VALUE "ProductName", APP_NAME
             VALUE "FileDescription", APP_DESCRIPTION
             VALUE "ProductVersion", APP_VERSION
-            VALUE "OriginalFilename", APP_FILE_NAME
+            VALUE "OriginalFilename", "PowerTray.exe"
         }
     }
     BLOCK "VarFileInfo"
@@ -30,5 +30,5 @@ VS_VERSION_INFO VERSIONINFO
     }
 }
 
-IDI_APP_ICON ICON "app.ico"
 1 RT_MANIFEST "app.manifest"
+IDI_APP ICON "app.ico"

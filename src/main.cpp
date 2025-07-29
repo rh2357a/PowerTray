@@ -1,218 +1,199 @@
-#include <windows.h>
-#include <shellapi.h>
+#include "main.h"
 
 #include "resources.h"
-#include "powerapi.h"
-#include "app_settings.h"
 #include "utils.h"
+#include "api/power.h"
+#include "api/windows.h"
+#include "settings/app.h"
 
-#define MENU_POWER_MDOE_BEST_PERFORMANCE   1
-#define MENU_POWER_MDOE_BETTER_PERFORMANCE 2
-#define MENU_POWER_MDOE_BEST_BATTERY       3
+#include <windows.h>
 
-#define MENU_PSR_FEATURE 4
-#define MENU_STARTUP     5
+#include <memory>
+#include <format>
+#include <vector>
 
-#define MENU_EXIT 6
+constexpr int WM_SYSTEM_TRAY = WM_APP + 0;
 
-#define MENU_PROFILE_EDIT 7
-#define MENU_PROFILE_ITEM 8
-
-HMENU menu = nullptr;
-HMENU profileMenu = nullptr;
-
-std::vector<power_profile_node> recentProfiles;
-
-LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
-void OnCreateTrayMenu();
-void OnUpdateTrayMenu();
-void OnTrayMenuSelected(int);
-void OnAppExit();
-
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+enum app_menu : UINT
 {
-    switch (uMsg)
-    {
-    case WM_APP:
-        if (lParam == WM_RBUTTONUP || lParam == WM_LBUTTONUP)
-        {
-            if (menu == nullptr)
-            {
-                menu = ::CreatePopupMenu();
-                OnCreateTrayMenu();
-            }
+	MODE_BEGIN = 1,
 
-            OnUpdateTrayMenu();
+	PSR = 5,
+	AUTO_START,
 
-            POINT pt;
-            ::GetCursorPos(&pt);
+	EXIT,
 
-            ::SetForegroundWindow(hwnd);
-            int cmd = ::TrackPopupMenu(menu, TPM_BOTTOMALIGN | TPM_LEFTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, nullptr);
-            OnTrayMenuSelected(cmd);
-        }
-        break;
+	PROFILE_EDIT,
+	PROFILE_ITEM_BEGIN,
+};
 
-    case WM_COMMAND:
-        OnTrayMenuSelected(LOWORD(wParam));
-        break;
+HWND handle;
+HMENU main_menu = nullptr, profile_menu = nullptr;
+std::vector<api::power::profile> recent_profiles;
 
-    case WM_DESTROY:
-        OnAppExit();
-        break;
-    }
+void win_main()
+{
+	WNDCLASS wc{};
+	wc.lpfnWndProc = wnd_proc;
+	wc.hInstance = ::GetModuleHandle(nullptr);
 
-    return ::DefWindowProc(hwnd, uMsg, wParam, lParam);
+	auto class_name = std::format(L"{}Class", APP_NAME);
+	wc.lpszClassName = class_name.c_str();
+
+	::RegisterClass(&wc);
+
+	handle = ::CreateWindowEx(0, wc.lpszClassName, APP_NAME, 0, 0, 0, 0, 0, 0, 0, 0, wc.hInstance);
+
+	NOTIFYICONDATA nid{};
+	nid.cbSize = sizeof(NOTIFYICONDATA);
+	nid.hWnd = handle;
+	nid.uID = 1;
+	nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+	nid.uCallbackMessage = WM_SYSTEM_TRAY;
+	nid.hIcon = (HICON)::LoadImage(::GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+
+	auto &tip = APP_DESCRIPTION;
+	utils::strings::wstring_copy(nid.szTip, tip);
+
+	::Shell_NotifyIcon(NIM_ADD, &nid);
+
+	on_menu_create();
+
+	MSG msg{};
+	while (::GetMessage(&msg, nullptr, 0, 0))
+	{
+		::TranslateMessage(&msg);
+		::DispatchMessage(&msg);
+	}
+
+	::Shell_NotifyIcon(NIM_DELETE, &nid);
 }
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+LRESULT wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    WNDCLASS wc = {};
-    wc.lpfnWndProc = WindowProc;
-    wc.hInstance = GetModuleHandle(nullptr);
-    wc.lpszClassName = L"PowerTrayClass";
-    ::RegisterClass(&wc);
+	if (msg == WM_SYSTEM_TRAY && (lparam == WM_RBUTTONUP || lparam == WM_LBUTTONUP))
+	{
+		on_menu_update();
+		on_menu_show();
+	}
+	else if (msg == WM_DESTROY)
+	{
+		on_app_exit();
+	}
 
-    HWND hwnd = ::CreateWindowEx(0, wc.lpszClassName, APP_NAME, 0, 0, 0, 0, 0, 0, 0, 0, wc.hInstance);
-
-    NOTIFYICONDATA nid = {};
-    nid.cbSize = sizeof(NOTIFYICONDATA);
-    nid.hWnd = hwnd;
-    nid.uID = 1;
-    nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
-    nid.uCallbackMessage = WM_APP;
-    nid.hIcon = (HICON)::LoadImage(::GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-    lstrcpyn(nid.szTip, APP_NAME, ARRAYSIZE(nid.szTip));
-
-    ::Shell_NotifyIcon(NIM_ADD, &nid);
-
-    MSG msg;
-    while (::GetMessage(&msg, nullptr, 0, 0))
-    {
-        ::TranslateMessage(&msg);
-        ::DispatchMessage(&msg);
-    }
-
-    ::Shell_NotifyIcon(NIM_DELETE, &nid);
-
-    return 0;
+	return ::DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-void OnCreateTrayMenu()
+void on_app_exit()
 {
-    ::AppendMenu(menu, MF_STRING, MENU_POWER_MDOE_BEST_PERFORMANCE, L"최고의 성능");
-    ::AppendMenu(menu, MF_STRING, MENU_POWER_MDOE_BETTER_PERFORMANCE, L"균형 잡힌");
-    ::AppendMenu(menu, MF_STRING, MENU_POWER_MDOE_BEST_BATTERY, L"최고의 전원 효율성");
-    ::AppendMenu(menu, MF_SEPARATOR, 0, nullptr);
+	if (main_menu)
+		::DestroyMenu(main_menu);
+	if (profile_menu)
+		::DestroyMenu(profile_menu);
 
-    profileMenu = ::CreatePopupMenu();
-    ::AppendMenu(menu, MF_POPUP, (UINT_PTR)profileMenu, L"전원 프로필");
-    ::AppendMenu(profileMenu, MF_STRING, MENU_PROFILE_EDIT, L"편집...");
-    ::AppendMenu(profileMenu, MF_SEPARATOR, 0, nullptr);
-    ::AppendMenu(menu, MF_SEPARATOR, 0, nullptr);
-
-    ::AppendMenu(menu, MF_STRING, MENU_PSR_FEATURE, L"PSR 활성화");
-    ::AppendMenu(menu, MF_SEPARATOR, 0, nullptr);
-
-    ::AppendMenu(menu, MF_STRING, MENU_STARTUP, L"Windows 시작 시 자동 실행");
-    ::AppendMenu(menu, MF_SEPARATOR, 0, nullptr);
-
-    ::AppendMenu(menu, MF_STRING, MENU_EXIT, L"끝내기");
+	::PostQuitMessage(0);
 }
 
-void OnUpdateTrayMenu()
+void on_menu_create()
 {
-    auto currentScheme = power_api::get_overlay_scheme();
+	main_menu = ::CreatePopupMenu();
+	profile_menu = ::CreatePopupMenu();
 
-    ::CheckMenuItem(
-        menu,
-        MENU_POWER_MDOE_BEST_PERFORMANCE,
-        currentScheme == power_api::SCHEME_BEST_PERFORMANCE ? MF_CHECKED : MF_UNCHECKED);
+	for (size_t i = 0; i < api::power::mode::MODES.size(); i++)
+	{
+		const auto &mode = api::power::mode::MODES[i];
+		::AppendMenu(main_menu, MF_STRING, app_menu::MODE_BEGIN + i, mode.name.c_str());
+	}
 
-    ::CheckMenuItem(
-        menu,
-        MENU_POWER_MDOE_BETTER_PERFORMANCE,
-        currentScheme == power_api::SCHEME_BETTER_PERFORMANCE ? MF_CHECKED : MF_UNCHECKED);
+	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
+	::AppendMenu(main_menu, MF_POPUP, (UINT_PTR)profile_menu, L"전원 프로필");
+	::AppendMenu(profile_menu, MF_STRING, app_menu::PROFILE_EDIT, L"편집...");
+	::AppendMenu(profile_menu, MF_SEPARATOR, 0, nullptr);
 
-    ::CheckMenuItem(
-        menu,
-        MENU_POWER_MDOE_BEST_BATTERY,
-        currentScheme == power_api::SCHEME_BETTER_BATTERY ? MF_CHECKED : MF_UNCHECKED);
+	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
+	::AppendMenu(main_menu, MF_STRING, app_menu::PSR, L"PSR 활성화");
 
-    ::CheckMenuItem(menu, MENU_PSR_FEATURE, app_settings::is_psr_enabled() ? MF_CHECKED : MF_UNCHECKED);
-    ::EnableMenuItem(menu, MENU_PSR_FEATURE, windows::is_administrator_enabled() ? MF_ENABLED : MF_DISABLED);
+	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
+	::AppendMenu(main_menu, MF_STRING, app_menu::AUTO_START, L"Windows 시작 시 자동 실행");
 
-    ::CheckMenuItem(menu, MENU_STARTUP, app_settings::is_startup_enabled() ? MF_CHECKED : MF_UNCHECKED);
-
-    int i = 0;
-    for (auto &scheme : recentProfiles)
-    {
-        ::DeleteMenu(profileMenu, MENU_PROFILE_ITEM + i, MF_BYCOMMAND);
-        i++;
-    }
-
-    recentProfiles = power_api::get_power_profiles();
-    auto currentProfileScheme = power_api::get_power_profile();
-
-    i = 0;
-    for (auto &scheme : recentProfiles)
-    {
-        auto name = scheme.friendly_name.c_str();
-        ::AppendMenu(
-            profileMenu,
-            MF_STRING | (currentProfileScheme == scheme.guid ? MF_CHECKED : MF_UNCHECKED),
-            MENU_PROFILE_ITEM + i,
-            name);
-        i++;
-    }
+	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
+	::AppendMenu(main_menu, MF_STRING, app_menu::EXIT, L"끝내기");
 }
 
-void OnTrayMenuSelected(int cmd)
+void on_menu_update()
 {
-    if (cmd >= MENU_PROFILE_ITEM)
-    {
-        int index = cmd - MENU_PROFILE_ITEM;
-        auto scheme = recentProfiles[index];
-        power_api::set_power_profile(scheme.guid);
-        return;
-    }
+	auto &current_mode = api::power::get_power_mode();
+	for (size_t i = 0; i < api::power::mode::MODES.size(); i++)
+	{
+		const auto &mode = api::power::mode::MODES[i];
+		const auto current = current_mode.guid == mode.guid;
+		::CheckMenuItem(main_menu, app_menu::MODE_BEGIN + i, current ? MF_CHECKED : MF_UNCHECKED);
+	}
 
-    switch (cmd)
-    {
-    case MENU_POWER_MDOE_BEST_PERFORMANCE:
-        power_api::set_overlay_scheme(power_api::SCHEME_BEST_PERFORMANCE);
-        break;
+	::CheckMenuItem(main_menu, app_menu::PSR, settings::app::is_psr_enabled() ? MF_CHECKED : MF_UNCHECKED);
+	::EnableMenuItem(main_menu, app_menu::PSR, api::windows::is_user_administrator() ? MF_ENABLED : MF_DISABLED);
 
-    case MENU_POWER_MDOE_BETTER_PERFORMANCE:
-        power_api::set_overlay_scheme(power_api::SCHEME_BETTER_PERFORMANCE);
-        break;
+	::CheckMenuItem(main_menu, app_menu::AUTO_START, settings::app::is_auto_start() ? MF_CHECKED : MF_UNCHECKED);
 
-    case MENU_POWER_MDOE_BEST_BATTERY:
-        power_api::set_overlay_scheme(power_api::SCHEME_BETTER_BATTERY);
-        break;
+	for (size_t i = 0; i < recent_profiles.size(); i++)
+	{
+		const auto &profile = recent_profiles[i];
+		::DeleteMenu(profile_menu, app_menu::PROFILE_ITEM_BEGIN + i, MF_BYCOMMAND);
+	}
 
-    case MENU_PSR_FEATURE:
-        app_settings::set_psr_enabled(!app_settings::is_psr_enabled());
-        break;
+	recent_profiles = api::power::get_power_profiles();
 
-    case MENU_STARTUP:
-        app_settings::set_startup_enabled(!app_settings::is_startup_enabled());
-        break;
-
-    case MENU_EXIT:
-        OnAppExit();
-        break;
-
-    case MENU_PROFILE_EDIT:
-        windows::exec("control powercfg.cpl");
-        break;
-    }
+	for (size_t i = 0; i < recent_profiles.size(); i++)
+	{
+		const auto &profile = recent_profiles[i];
+		auto name = profile.name.c_str();
+		::AppendMenu(
+			profile_menu,
+			MF_STRING | (profile.enabled ? MF_CHECKED : MF_UNCHECKED),
+			app_menu::PROFILE_ITEM_BEGIN + i,
+			name);
+	}
 }
 
-void OnAppExit()
+void on_menu_show()
 {
-    if (menu != nullptr)
-        ::DestroyMenu(menu);
-    ::PostQuitMessage(0);
+	POINT pt;
+	::GetCursorPos(&pt);
+
+	::SetForegroundWindow(handle);
+
+	UINT cmd = ::TrackPopupMenu(main_menu, TPM_BOTTOMALIGN | TPM_LEFTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, handle, nullptr);
+
+	if (cmd == app_menu::PSR)
+	{
+		auto enabled = !settings::app::is_psr_enabled();
+		settings::app::set_psr_enabled(enabled);
+		return;
+	}
+	else if (cmd == app_menu::AUTO_START)
+	{
+		auto enabled = !settings::app::is_auto_start();
+		settings::app::set_auto_start(enabled);
+		return;
+	}
+	else if (cmd == app_menu::EXIT)
+	{
+		on_app_exit();
+	}
+	else if (cmd == app_menu::PROFILE_EDIT)
+	{
+		api::windows::run_process("control powercfg.cpl");
+	}
+	else if (cmd >= app_menu::MODE_BEGIN && cmd < app_menu::MODE_BEGIN + static_cast<UINT>(api::power::mode::MODES.size()))
+	{
+		int index = cmd - app_menu::MODE_BEGIN;
+		auto &mode = api::power::mode::MODES[index];
+		api::power::apply_power_mode(mode);
+		return;
+	}
+	else if (cmd >= app_menu::PROFILE_ITEM_BEGIN)
+	{
+		const auto &profile = recent_profiles[cmd - app_menu::PROFILE_ITEM_BEGIN];
+		api::power::apply_power_profile(profile);
+	}
 }
