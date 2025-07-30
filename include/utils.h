@@ -5,6 +5,7 @@
 
 #include <string>
 #include <span>
+#include <vector>
 
 namespace utils::strings {
 
@@ -14,6 +15,8 @@ std::wstring to_wstring(const UCHAR *c_str);
 
 void string_copy(std::span<CHAR> dest, const std::string &str);
 void wstring_copy(std::span<WCHAR> dest, const std::wstring &str);
+
+std::vector<std::string> split(const std::string &str, const char &delimiter);
 
 } // namespace utils::strings
 

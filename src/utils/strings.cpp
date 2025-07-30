@@ -36,3 +36,22 @@ void utils::strings::wstring_copy(std::span<WCHAR> dest, const std::wstring &str
 	const auto c_str = str.c_str();
 	lstrcpynW(dest.data(), c_str, dest.size());
 }
+
+std::vector<std::string> utils::strings::split(const std::string &input, const char &delimiter)
+{
+	std::vector<std::string> result;
+
+	size_t start = 0;
+	size_t end = input.find(delimiter);
+
+	while (end != std::string::npos)
+	{
+		result.push_back(input.substr(start, end - start));
+		start = end + 1;
+		end = input.find(delimiter, start);
+	}
+
+	result.push_back(input.substr(start));
+
+	return result;
+}

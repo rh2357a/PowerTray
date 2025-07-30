@@ -31,8 +31,11 @@ HWND handle;
 HMENU main_menu = nullptr, profile_menu = nullptr;
 std::vector<api::power::profile> recent_profiles;
 
-void win_main()
+void win_main(std::vector<std::string> args)
 {
+	if (std::find(args.begin(), args.end(), "--toggle-psr") != args.end())
+		toggle_psr();
+
 	WNDCLASS wc{};
 	wc.lpfnWndProc = wnd_proc;
 	wc.hInstance = ::GetModuleHandle(nullptr);
@@ -131,8 +134,6 @@ void on_menu_update()
 	}
 
 	::CheckMenuItem(main_menu, app_menu::PSR, settings::app::is_psr_enabled() ? MF_CHECKED : MF_UNCHECKED);
-	::EnableMenuItem(main_menu, app_menu::PSR, api::windows::is_user_administrator() ? MF_ENABLED : MF_DISABLED);
-
 	::CheckMenuItem(main_menu, app_menu::AUTO_START, settings::app::is_auto_start() ? MF_CHECKED : MF_UNCHECKED);
 
 	for (size_t i = 0; i < recent_profiles.size(); i++)
@@ -166,8 +167,7 @@ void on_menu_show()
 
 	if (cmd == app_menu::PSR)
 	{
-		auto enabled = !settings::app::is_psr_enabled();
-		settings::app::set_psr_enabled(enabled);
+		toggle_psr();
 		return;
 	}
 	else if (cmd == app_menu::AUTO_START)
@@ -195,5 +195,18 @@ void on_menu_show()
 	{
 		const auto &profile = recent_profiles[cmd - app_menu::PROFILE_ITEM_BEGIN];
 		api::power::apply_power_profile(profile);
+	}
+}
+
+void toggle_psr()
+{
+	if (api::windows::is_user_administrator())
+	{
+		auto enabled = !settings::app::is_psr_enabled();
+		settings::app::set_psr_enabled(enabled);
+	}
+	else
+	{
+		api::windows::restart_as_administrator();
 	}
 }
