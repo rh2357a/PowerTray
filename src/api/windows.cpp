@@ -24,7 +24,7 @@ void windows::run_process(const std::string &cmd)
 	}
 }
 
-bool api::windows::restart_as_administrator()
+bool api::windows::restart_as_administrator(bool retain_app)
 {
 	CHAR exe_name[MAX_PATH];
 	GetModuleFileNameA(nullptr, exe_name, MAX_PATH);
@@ -35,7 +35,7 @@ bool api::windows::restart_as_administrator()
 	info.fMask = SEE_MASK_FLAG_NO_UI;
 	info.nShow = SW_SHOW;
 	info.lpFile = exe_name;
-	info.lpParameters = "--toggle-psr";
+	info.lpParameters = retain_app ? "--toggle-psr-restart" : "--toggle-psr";
 
 	if (ShellExecuteExA(&info))
 	{

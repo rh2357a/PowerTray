@@ -6,6 +6,7 @@ endif
 
 SOURCE_DIR   := src
 RESOURCE_DIR := res
+LIB_DIR      := lib
 BUILD_DIR    := build
 
 BUILD_TARGET_DIR := $(BUILD_DIR)/$(BUILD_TARGET)
@@ -28,7 +29,10 @@ CXXFLAGS := -std=c++20 -fpermissive \
             -Wno-unused-function
 
 CXXDEFINES  := -DUNICODE -D_UNICODE
-CXXINCLUDES := -I$(SOURCE_DIR) -Iinclude
+
+CXXINCLUDES := -I$(SOURCE_DIR) -Iinclude \
+               -I$(LIB_DIR)/argparse/include
+
 LDFLAGS     := -static -static-libgcc -static-libstdc++ -mwindows \
                -lmsvcrt -lcomdlg32 -lgdi32 -luser32 -lshell32 -lpowrprof
 

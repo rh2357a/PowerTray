@@ -1,12 +1,16 @@
 #include "app.h"
 
+#include "utils.h"
 #include "resources.h"
+
 #include <windows.h>
 
 namespace settings::app {
 
-constexpr const auto REG_KEY_APP_NAME = APP_NAME;
 constexpr const auto REG_PATH_STARTUP = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+
+constexpr const auto REG_KEY_PSR_FEATURE = L"DalPSRFeatureEnable";
+constexpr const auto REG_PATH_PSR_FEATURE = L"SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0000";
 
 bool is_auto_start()
 {
@@ -18,7 +22,8 @@ bool is_auto_start()
 
 	LPBYTE filename[MAX_PATH];
 	DWORD len = sizeof(filename);
-	result = ::RegQueryValueEx(key, REG_KEY_APP_NAME, nullptr, nullptr, (LPBYTE)filename, &len);
+	auto app_name = utils::strings::to_wstring(APP_NAME);
+	result = ::RegQueryValueEx(key, app_name.c_str(), nullptr, nullptr, (LPBYTE)filename, &len);
 
 	::RegCloseKey(key);
 
@@ -33,22 +38,21 @@ void set_auto_start(const bool &enabled)
 	if (result != ERROR_SUCCESS)
 		return;
 
+	auto app_name = utils::strings::to_wstring(APP_NAME);
+
 	if (enabled)
 	{
 		wchar_t filename[MAX_PATH];
 		auto len = ::GetModuleFileName(nullptr, filename, sizeof(filename));
-		::RegSetValueEx(key, REG_KEY_APP_NAME, 0, REG_SZ, (const BYTE *)filename, len * sizeof(wchar_t));
+		::RegSetValueEx(key, app_name.c_str(), 0, REG_SZ, (const BYTE *)filename, len * sizeof(wchar_t));
 	}
 	else
 	{
-		::RegDeleteValue(key, REG_KEY_APP_NAME);
+		::RegDeleteValue(key, app_name.c_str());
 	}
 
 	::RegCloseKey(key);
 }
-
-constexpr const auto REG_KEY_PSR_FEATURE = L"DalPSRFeatureEnable";
-constexpr const auto REG_PATH_PSR_FEATURE = L"SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0000";
 
 bool is_psr_enabled()
 {

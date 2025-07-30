@@ -10,6 +10,10 @@ namespace api::power {
 
 struct mode
 {
+	static const mode MODE_BEST_PERFORMANCE;
+	static const mode MODE_BALANCE;
+	static const mode MODE_BETTER_BATTERY;
+
 	static const std::vector<mode> MODES;
 
 	std::wstring name;
