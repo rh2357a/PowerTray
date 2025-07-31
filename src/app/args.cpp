@@ -17,7 +17,7 @@ argparse::ArgumentParser app_args(APP_NAME);
 void init()
 {
 	int argc;
-	auto argvw = ::CommandLineToArgvW(GetCommandLineW(), &argc);
+	auto argvw = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
 
 	std::vector<std::string> args;
 	args.push_back(APP_NAME);
@@ -35,7 +35,7 @@ void init()
 	app_args.add_argument("-p", "--toggle-psr-restart").flag().hidden();
 	app_args.add_argument("-a", "--toggle-auto-start").flag();
 
-	auto test = app_args.parse_known_args(args);
+	app_args.parse_known_args(args);
 }
 
 std::optional<api::power::mode> get_mode()
