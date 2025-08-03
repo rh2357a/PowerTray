@@ -36,6 +36,10 @@ namespace app {
 HWND handle = nullptr;
 HMENU main_menu = nullptr, profile_menu = nullptr;
 
+const auto version = api::windows::get_version();
+const auto is_supported_overlay_scheme = version.major >= 10 && version.build >= 17763; // windows 10 1809
+const auto is_supported_psr_feature = version.major >= 10 && version.build >= 18362;    // windows 10 1903
+
 std::vector<api::power::profile> recent_profiles;
 
 void run()
@@ -146,19 +150,26 @@ void on_menu_create()
 	main_menu = ::CreatePopupMenu();
 	profile_menu = ::CreatePopupMenu();
 
-	for (size_t i = 0; i < api::power::mode::MODES.size(); i++)
+	if (is_supported_overlay_scheme)
 	{
-		const auto &mode = api::power::mode::MODES[i];
-		::AppendMenu(main_menu, MF_STRING, app_menu::MODE_BEGIN + i, mode.name.c_str());
+		for (size_t i = 0; i < api::power::mode::MODES.size(); i++)
+		{
+			const auto &mode = api::power::mode::MODES[i];
+			::AppendMenu(main_menu, MF_STRING, app_menu::MODE_BEGIN + i, mode.name.c_str());
+		}
+
+		::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
 	}
 
-	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
 	::AppendMenu(main_menu, MF_POPUP, (UINT_PTR)profile_menu, L"전원 프로필");
 	::AppendMenu(profile_menu, MF_STRING, app_menu::PROFILE_EDIT, L"편집...");
 	::AppendMenu(profile_menu, MF_SEPARATOR, 0, nullptr);
 
-	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
-	::AppendMenu(main_menu, MF_STRING, app_menu::PSR, L"PSR 활성화");
+	if (is_supported_psr_feature)
+	{
+		::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
+		::AppendMenu(main_menu, MF_STRING, app_menu::PSR, L"PSR 활성화");
+	}
 
 	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
 	::AppendMenu(main_menu, MF_STRING, app_menu::AUTO_START, L"Windows 시작 시 자동 실행");
@@ -169,15 +180,20 @@ void on_menu_create()
 
 void on_menu_update()
 {
-	auto &current_mode = api::power::get_power_mode();
-	for (size_t i = 0; i < api::power::mode::MODES.size(); i++)
+	if (is_supported_overlay_scheme)
 	{
-		const auto &mode = api::power::mode::MODES[i];
-		const auto current = current_mode.guid == mode.guid;
-		::CheckMenuItem(main_menu, app_menu::MODE_BEGIN + i, current ? MF_CHECKED : MF_UNCHECKED);
+		auto &current_mode = api::power::get_power_mode();
+		for (size_t i = 0; i < api::power::mode::MODES.size(); i++)
+		{
+			const auto id = app_menu::MODE_BEGIN + i;
+			const auto &mode = api::power::mode::MODES[i];
+			const auto current = current_mode.guid == mode.guid;
+			::CheckMenuItem(main_menu, id, current ? MF_CHECKED : MF_UNCHECKED);
+		}
 	}
 
-	::CheckMenuItem(main_menu, app_menu::PSR, settings::app::is_psr_enabled() ? MF_CHECKED : MF_UNCHECKED);
+	if (is_supported_psr_feature)
+		::CheckMenuItem(main_menu, app_menu::PSR, settings::app::is_psr_enabled() ? MF_CHECKED : MF_UNCHECKED);
 	::CheckMenuItem(main_menu, app_menu::AUTO_START, settings::app::is_auto_start() ? MF_CHECKED : MF_UNCHECKED);
 
 	for (size_t i = 0; i < recent_profiles.size(); i++)

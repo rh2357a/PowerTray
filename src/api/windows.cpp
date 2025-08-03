@@ -24,7 +24,7 @@ void windows::run_process(const std::string &cmd)
 	}
 }
 
-bool api::windows::restart_as_administrator(bool retain_app)
+bool windows::restart_as_administrator(bool retain_app)
 {
 	CHAR exe_name[MAX_PATH];
 	::GetModuleFileNameA(nullptr, exe_name, MAX_PATH);
@@ -47,6 +47,22 @@ bool api::windows::restart_as_administrator(bool retain_app)
 	}
 
 	return false;
+}
+
+windows::version windows::get_version()
+{
+	auto func = utils::dll::get<LONG(WINAPI *)(PRTL_OSVERSIONINFOW)>("ntdll.dll", "RtlGetVersion");
+
+	RTL_OSVERSIONINFOW info{};
+	info.dwOSVersionInfoSize = sizeof(info);
+
+	func(&info);
+
+	return {
+		static_cast<int>(info.dwMajorVersion),
+		static_cast<int>(info.dwMinorVersion),
+		static_cast<int>(info.dwBuildNumber),
+	};
 }
 
 } // namespace api
