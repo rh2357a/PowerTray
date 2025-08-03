@@ -62,7 +62,16 @@ void run()
 
 		if (app::args::has_toggle_psr())
 		{
-			toggle_psr(false);
+			if (api::windows::is_user_administrator())
+			{
+				auto enabled = !settings::app::is_psr_enabled();
+				settings::app::set_psr_enabled(enabled);
+			}
+			else
+			{
+				api::windows::restart_as_administrator("--toggle-psr --ignore-from-restart");
+				return;
+			}
 			has_action = true;
 		}
 
@@ -72,10 +81,7 @@ void run()
 			has_action = true;
 		}
 
-		if (app::args::has_toggle_psr_restart())
-			toggle_psr(false);
-
-		if (has_action)
+		if (has_action && !app::args::from_restart())
 			return;
 	}
 
@@ -227,7 +233,7 @@ void on_menu_show()
 
 	if (cmd == app_menu::PSR)
 	{
-		toggle_psr(true);
+		toggle_psr();
 	}
 	else if (cmd == app_menu::AUTO_START)
 	{
@@ -259,7 +265,7 @@ void open_edit_profile()
 	api::windows::run_process("control powercfg.cpl");
 }
 
-void toggle_psr(bool retain_app)
+void toggle_psr()
 {
 	if (api::windows::is_user_administrator())
 	{
@@ -268,7 +274,7 @@ void toggle_psr(bool retain_app)
 	}
 	else
 	{
-		api::windows::restart_as_administrator(retain_app);
+		api::windows::restart_as_administrator("--toggle-psr");
 	}
 }
 

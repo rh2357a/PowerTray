@@ -18,7 +18,7 @@ namespace api::windows {
 
 bool is_user_administrator();
 void run_process(const std::string &cmd);
-bool restart_as_administrator(bool retain_app);
+bool restart_as_administrator(const std::string &parameters);
 version get_version();
 
 } // namespace api::windows

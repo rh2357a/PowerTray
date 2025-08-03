@@ -17,7 +17,7 @@ void on_menu_update();
 void on_menu_show();
 
 void open_edit_profile();
-void toggle_psr(bool retain_app);
+void toggle_psr();
 void toggle_auto_start();
 
 } // namespace app

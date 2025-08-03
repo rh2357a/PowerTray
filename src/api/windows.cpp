@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <shlobj.h>
 
+#include <format>
+
 namespace api {
 
 bool windows::is_user_administrator()
@@ -24,7 +26,7 @@ void windows::run_process(const std::string &cmd)
 	}
 }
 
-bool windows::restart_as_administrator(bool retain_app)
+bool windows::restart_as_administrator(const std::string &parameters)
 {
 	CHAR exe_name[MAX_PATH];
 	::GetModuleFileNameA(nullptr, exe_name, MAX_PATH);
@@ -35,7 +37,9 @@ bool windows::restart_as_administrator(bool retain_app)
 	info.fMask = SEE_MASK_FLAG_NO_UI;
 	info.nShow = SW_SHOW;
 	info.lpFile = exe_name;
-	info.lpParameters = retain_app ? "--toggle-psr-restart" : "--toggle-psr";
+
+	auto params = std::format("{} {}", "--from-restart", parameters);
+	info.lpParameters = params.c_str();
 
 	if (::ShellExecuteExA(&info))
 	{
