@@ -21,7 +21,7 @@ VS_VERSION_INFO VERSIONINFO
             VALUE "ProductName", APP_NAME
             VALUE "FileDescription", APP_DESCRIPTION
             VALUE "ProductVersion", APP_VERSION
-            VALUE "OriginalFilename", "PowerTray.exe"
+            VALUE "OriginalFilename", APP_FILENAME
         }
     }
     BLOCK "VarFileInfo"

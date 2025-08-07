@@ -4,6 +4,9 @@ else
 BUILD_TARGET := release
 endif
 
+APP_NAME     := $(notdir $(CURDIR))
+APP_FILENAME := $(APP_NAME).exe
+
 SOURCE_DIR   := src
 RESOURCE_DIR := res
 LIB_DIR      := lib
@@ -11,7 +14,7 @@ BUILD_DIR    := build
 
 BUILD_TARGET_DIR := $(BUILD_DIR)/$(BUILD_TARGET)
 BUILD_OBJ_DIR    := $(BUILD_TARGET_DIR)/obj
-TARGET           := $(BUILD_TARGET_DIR)/bin/$(notdir $(CURDIR)).exe
+TARGET           := $(BUILD_TARGET_DIR)/bin/$(APP_FILENAME)
 
 ################################################################################
 
@@ -28,7 +31,9 @@ CXXFLAGS := -std=c++20 -fpermissive \
             -Wno-unused-variable \
             -Wno-unused-function
 
-CXXDEFINES  := -DUNICODE -D_UNICODE
+CXXDEFINES  := -DUNICODE -D_UNICODE \
+               -D_APP_NAME=$(APP_NAME) \
+               -D_APP_FILENAME=$(APP_FILENAME)
 
 CXXINCLUDES := -I$(SOURCE_DIR) -Iinclude \
                -I$(LIB_DIR)/argparse/include

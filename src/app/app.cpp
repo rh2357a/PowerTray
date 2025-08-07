@@ -37,8 +37,8 @@ HWND handle = nullptr;
 HMENU main_menu = nullptr, profile_menu = nullptr;
 
 const auto version = api::windows::get_version();
-const auto is_supported_overlay_scheme = version.major >= 10 && version.build >= 17763; // windows 10 1809
-const auto is_supported_psr_feature = version.major >= 10 && version.build >= 18362;    // windows 10 1903
+const auto is_overlay_scheme_supported = version.major >= 10 && version.build >= 17763; // windows 10 1809
+const auto is_psr_feature_supported = version.major >= 10 && version.build >= 18362;    // windows 10 1903
 
 std::vector<api::power::profile> recent_profiles;
 
@@ -156,7 +156,7 @@ void on_menu_create()
 	main_menu = ::CreatePopupMenu();
 	profile_menu = ::CreatePopupMenu();
 
-	if (is_supported_overlay_scheme)
+	if (is_overlay_scheme_supported)
 	{
 		for (size_t i = 0; i < api::power::mode::MODES.size(); i++)
 		{
@@ -171,7 +171,7 @@ void on_menu_create()
 	::AppendMenu(profile_menu, MF_STRING, app_menu::PROFILE_EDIT, L"편집...");
 	::AppendMenu(profile_menu, MF_SEPARATOR, 0, nullptr);
 
-	if (is_supported_psr_feature)
+	if (is_psr_feature_supported)
 	{
 		::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
 		::AppendMenu(main_menu, MF_STRING, app_menu::PSR, L"PSR 활성화");
@@ -186,7 +186,7 @@ void on_menu_create()
 
 void on_menu_update()
 {
-	if (is_supported_overlay_scheme)
+	if (is_overlay_scheme_supported)
 	{
 		auto &current_mode = api::power::get_power_mode();
 		for (size_t i = 0; i < api::power::mode::MODES.size(); i++)
@@ -198,7 +198,7 @@ void on_menu_update()
 		}
 	}
 
-	if (is_supported_psr_feature)
+	if (is_psr_feature_supported)
 		::CheckMenuItem(main_menu, app_menu::PSR, settings::app::is_psr_enabled() ? MF_CHECKED : MF_UNCHECKED);
 	::CheckMenuItem(main_menu, app_menu::AUTO_START, settings::app::is_auto_start() ? MF_CHECKED : MF_UNCHECKED);
 
