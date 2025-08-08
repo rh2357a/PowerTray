@@ -8,9 +8,9 @@ Command-Line Options
 --------------------
 -m, --mode <value>      Sets the power mode.
                         Values:
-                          best    - Best performance
-                          balance - Balanced
-                          battery - Best power efficiency
+                          performance - Best performance
+                          balance     - Balanced
+                          battery     - Best power efficiency
 -e, --edit-profile      Opens the power options.
 -p, --toggle-psr        Toggles PSR feature.
 -a, --toggle-auto-start Toggles automatic startup when Windows starts.

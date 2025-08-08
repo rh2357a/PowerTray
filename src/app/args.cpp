@@ -43,7 +43,7 @@ void init()
 std::optional<api::power::mode> get_mode()
 {
 	static std::unordered_map<std::string, api::power::mode> modes{
-		{"best", api::power::mode::MODE_BEST_PERFORMANCE},
+		{"performance", api::power::mode::MODE_BEST_PERFORMANCE},
 		{"balance", api::power::mode::MODE_BALANCE},
 		{"battery", api::power::mode::MODE_BETTER_BATTERY},
 	};
