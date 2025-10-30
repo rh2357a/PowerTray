@@ -1,3 +1,5 @@
+WINDRES := windres
+
 ifeq ($(DEBUG), 1)
 BUILD_TARGET := debug
 else
@@ -18,11 +20,6 @@ TARGET           := $(BUILD_TARGET_DIR)/bin/$(APP_FILENAME)
 
 ################################################################################
 
-CXX     := x86_64-w64-mingw32-g++
-WINDRES := windres
-
-################################################################################
-
 CXXFLAGS := -std=c++20 -fpermissive \
             -MMD -MP \
             -Wall -Wextra \
@@ -39,7 +36,7 @@ CXXINCLUDES := -I$(SOURCE_DIR) -Iinclude \
                -I$(LIB_DIR)/argparse/include
 
 LDFLAGS     := -static -static-libgcc -static-libstdc++ -mwindows \
-               -lmsvcrt -lcomdlg32 -lgdi32 -luser32 -lshell32 -lpowrprof
+               -lcomdlg32 -lgdi32 -luser32 -lshell32 -lpowrprof
 
 ifeq ($(DEBUG), 1)
 CXXFLAGS     += -g -O0
