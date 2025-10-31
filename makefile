@@ -1,5 +1,3 @@
-WINDRES := windres
-
 ifeq ($(DEBUG), 1)
 BUILD_TARGET := debug
 else
@@ -36,7 +34,7 @@ CXXINCLUDES := -I$(SOURCE_DIR) -Iinclude \
                -I$(LIB_DIR)/argparse/include
 
 LDFLAGS     := -static -static-libgcc -static-libstdc++ -mwindows \
-               -lcomdlg32 -lgdi32 -luser32 -lshell32 -lpowrprof
+               -lmsvcrt -lcomdlg32 -lgdi32 -luser32 -lshell32 -lpowrprof
 
 ifeq ($(DEBUG), 1)
 CXXFLAGS     += -g -O0
@@ -87,7 +85,7 @@ $(BUILD_OBJ_DIR)/%.o: %.cpp
 
 $(BUILD_OBJ_DIR)/%.rc.o: $(RC_FILE) $(RES_STAMP)
 	@mkdir -p $(shell dirname $@)
-	$(WINDRES) $(CXXDEFINES) $(CXXINCLUDES) $< $@
+	windres $(CXXDEFINES) $(CXXINCLUDES) $< $@
 
 clean:
 	rm -rf $(BUILD_DIR)
