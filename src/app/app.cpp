@@ -21,6 +21,7 @@ enum app_menu : UINT
 	MODE_BEGIN = 1,
 
 	PSR = 5,
+	MPO,
 	AUTO_START,
 
 	EXIT,
@@ -37,8 +38,8 @@ HWND handle = nullptr;
 HMENU main_menu = nullptr, profile_menu = nullptr;
 
 const auto version = api::windows::get_version();
-const auto is_overlay_scheme_supported = version.major >= 10 && version.build >= 17763; // windows 10 1809
-const auto is_psr_feature_supported = version.major >= 10 && version.build >= 18362;    // windows 10 1903
+const auto is_overlay_scheme_supported = version.major >= 10 && version.build >= 17763;  // windows 10 1809
+const auto is_psr_mpo_feature_supported = version.major >= 10 && version.build >= 18362; // windows 10 1903
 
 std::vector<api::power::profile> recent_profiles;
 
@@ -78,6 +79,21 @@ void run()
 		if (app::args::has_toggle_auto_start())
 		{
 			toggle_auto_start();
+			has_action = true;
+		}
+
+		if (app::args::has_toggle_mpo())
+		{
+			if (api::windows::is_user_administrator())
+			{
+				auto enabled = !settings::app::is_mpo_enabled();
+				settings::app::set_mpo_enabled(enabled);
+			}
+			else
+			{
+				api::windows::restart_as_administrator("--toggle-mpo --ignore-from-restart");
+				return;
+			}
 			has_action = true;
 		}
 
@@ -171,10 +187,11 @@ void on_menu_create()
 	::AppendMenu(profile_menu, MF_STRING, app_menu::PROFILE_EDIT, L"편집...");
 	::AppendMenu(profile_menu, MF_SEPARATOR, 0, nullptr);
 
-	if (is_psr_feature_supported)
+	if (is_psr_mpo_feature_supported)
 	{
 		::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
-		::AppendMenu(main_menu, MF_STRING, app_menu::PSR, L"PSR 활성화");
+		::AppendMenu(main_menu, MF_STRING, app_menu::PSR, L"PSR 기능");
+		::AppendMenu(main_menu, MF_STRING, app_menu::MPO, L"MPO 기능");
 	}
 
 	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
@@ -198,8 +215,12 @@ void on_menu_update()
 		}
 	}
 
-	if (is_psr_feature_supported)
+	if (is_psr_mpo_feature_supported)
+	{
 		::CheckMenuItem(main_menu, app_menu::PSR, settings::app::is_psr_enabled() ? MF_CHECKED : MF_UNCHECKED);
+		::CheckMenuItem(main_menu, app_menu::MPO, settings::app::is_mpo_enabled() ? MF_CHECKED : MF_UNCHECKED);
+	}
+
 	::CheckMenuItem(main_menu, app_menu::AUTO_START, settings::app::is_auto_start() ? MF_CHECKED : MF_UNCHECKED);
 
 	for (size_t i = 0; i < recent_profiles.size(); i++)
@@ -238,6 +259,10 @@ void on_menu_show()
 	else if (cmd == app_menu::AUTO_START)
 	{
 		toggle_auto_start();
+	}
+	if (cmd == app_menu::MPO)
+	{
+		toggle_mpo();
 	}
 	else if (cmd == app_menu::EXIT)
 	{
@@ -282,6 +307,19 @@ void toggle_auto_start()
 {
 	auto enabled = !settings::app::is_auto_start();
 	settings::app::set_auto_start(enabled);
+}
+
+void toggle_mpo()
+{
+	if (api::windows::is_user_administrator())
+	{
+		auto enabled = !settings::app::is_mpo_enabled();
+		settings::app::set_mpo_enabled(enabled);
+	}
+	else
+	{
+		api::windows::restart_as_administrator("--toggle-mpo");
+	}
 }
 
 } // namespace app

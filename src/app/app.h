@@ -19,6 +19,7 @@ void on_menu_show();
 void open_edit_profile();
 void toggle_psr();
 void toggle_auto_start();
+void toggle_mpo();
 
 } // namespace app
 

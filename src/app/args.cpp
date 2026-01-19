@@ -33,6 +33,7 @@ void init()
 	app_args.add_argument("-e", "--edit-profile").flag();
 	app_args.add_argument("-p", "--toggle-psr").flag();
 	app_args.add_argument("-a", "--toggle-auto-start").flag();
+	app_args.add_argument("-m", "--toggle-mpo").flag();
 
 	app_args.add_argument("--from-restart").flag().hidden();
 	app_args.add_argument("--ignore-from-restart").flag().hidden();
@@ -67,6 +68,11 @@ bool has_toggle_psr()
 bool has_toggle_auto_start()
 {
 	return app_args.get<bool>("--toggle-auto-start");
+}
+
+bool has_toggle_mpo()
+{
+	return app_args.get<bool>("--toggle-mpo");
 }
 
 bool from_restart()
