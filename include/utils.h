@@ -25,25 +25,25 @@ namespace utils {
 class dll
 {
 private:
-	static bool s_init;
+    static bool s_init;
 
 public:
-	template <typename _FuncType>
-	static _FuncType get(const std::string &dll_name, const std::string &func_name)
-	{
-		if (!s_init)
-		{
-			atexit(free);
-			s_init = true;
-		}
+    template <typename _FuncType>
+    static _FuncType get(const std::string &dll_name, const std::string &func_name)
+    {
+        if (!s_init)
+        {
+            atexit(free);
+            s_init = true;
+        }
 
-		const auto &inst = get_func_inst(dll_name, func_name);
-		return reinterpret_cast<_FuncType>(inst);
-	}
+        const auto &inst = get_func_inst(dll_name, func_name);
+        return reinterpret_cast<_FuncType>(inst);
+    }
 
 private:
-	static FARPROC get_func_inst(const std::string &dll_name, const std::string &func_name);
-	static void free();
+    static FARPROC get_func_inst(const std::string &dll_name, const std::string &func_name);
+    static void free();
 };
 
 } // namespace utils

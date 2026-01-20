@@ -5,7 +5,7 @@
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-	app::args::init();
-	app::run();
-	return 0;
+    app::args::init();
+    app::run();
+    return 0;
 }

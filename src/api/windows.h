@@ -7,9 +7,9 @@ namespace api::windows {
 
 struct version
 {
-	int major;
-	int minor;
-	int build;
+    int major;
+    int minor;
+    int build;
 };
 
 } // namespace api::windows

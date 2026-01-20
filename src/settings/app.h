@@ -4,13 +4,13 @@
 namespace settings::app {
 
 bool is_auto_start();
-void set_auto_start(const bool &enabled);
+void set_auto_start(bool enabled);
 
 bool is_psr_enabled();
-void set_psr_enabled(const bool &enabled);
+void set_psr_enabled(bool enabled);
 
 bool is_mpo_enabled();
-void set_mpo_enabled(const bool &enabled);
+void set_mpo_enabled(bool enabled);
 
 } // namespace settings::app
 

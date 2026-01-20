@@ -10,33 +10,33 @@ namespace api::power {
 
 struct mode
 {
-	static const mode MODE_BEST_PERFORMANCE;
-	static const mode MODE_BALANCE;
-	static const mode MODE_BETTER_BATTERY;
+    static const mode MODE_BEST_PERFORMANCE;
+    static const mode MODE_BALANCE;
+    static const mode MODE_BETTER_BATTERY;
 
-	static const std::vector<mode> MODES;
+    static const std::vector<mode> MODES;
 
-	std::wstring name;
-	GUID guid;
+    std::wstring name;
+    GUID guid;
 
-	mode() = default;
-	~mode() = default;
+    mode() = default;
+    ~mode() = default;
 
-	mode(const std::wstring &name, const GUID &guid)
-		: name(name), guid(guid) {}
+    mode(const std::wstring &name, const GUID &guid)
+        : name(name), guid(guid) {}
 };
 
 struct profile
 {
-	std::wstring name;
-	GUID guid;
-	bool enabled;
+    std::wstring name;
+    GUID guid;
+    bool enabled;
 
-	profile() = default;
-	~profile() = default;
+    profile() = default;
+    ~profile() = default;
 
-	profile(const std::wstring &name, const GUID &guid, const bool &enabled)
-		: name(name), guid(guid), enabled(enabled) {}
+    profile(const std::wstring &name, const GUID &guid, const bool &enabled)
+        : name(name), guid(guid), enabled(enabled) {}
 };
 
 } // namespace api::power

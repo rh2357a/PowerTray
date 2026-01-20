@@ -16,68 +16,68 @@ argparse::ArgumentParser app_args(APP_NAME);
 
 void init()
 {
-	int argc;
-	auto argvw = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+    int argc;
+    auto argvw = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
 
-	std::vector<std::string> args;
-	args.push_back(APP_NAME);
+    std::vector<std::string> args;
+    args.push_back(APP_NAME);
 
-	for (int i = 1; i < argc; ++i)
-	{
-		auto wstr = std::wstring(argvw[i]);
-		auto str = utils::strings::to_string(wstr);
-		args.push_back(str);
-	}
+    for (int i = 1; i < argc; ++i)
+    {
+        auto wstr = std::wstring(argvw[i]);
+        auto str = utils::strings::to_string(wstr);
+        args.push_back(str);
+    }
 
-	app_args.add_argument("-m", "--mode").nargs(1).default_value(std::string(""));
-	app_args.add_argument("-e", "--edit-profile").flag();
-	app_args.add_argument("-p", "--toggle-psr").flag();
-	app_args.add_argument("-a", "--toggle-auto-start").flag();
-	app_args.add_argument("-m", "--toggle-mpo").flag();
+    app_args.add_argument("-m", "--mode").nargs(1).default_value(std::string(""));
+    app_args.add_argument("-e", "--edit-profile").flag();
+    app_args.add_argument("-p", "--toggle-psr").flag();
+    app_args.add_argument("-a", "--toggle-auto-start").flag();
+    app_args.add_argument("-m", "--toggle-mpo").flag();
 
-	app_args.add_argument("--from-restart").flag().hidden();
-	app_args.add_argument("--ignore-from-restart").flag().hidden();
+    app_args.add_argument("--from-restart").flag().hidden();
+    app_args.add_argument("--ignore-from-restart").flag().hidden();
 
-	app_args.parse_known_args(args);
+    app_args.parse_known_args(args);
 }
 
 std::optional<api::power::mode> get_mode()
 {
-	static std::unordered_map<std::string, api::power::mode> modes{
-		{"performance", api::power::mode::MODE_BEST_PERFORMANCE},
-		{"balance", api::power::mode::MODE_BALANCE},
-		{"battery", api::power::mode::MODE_BETTER_BATTERY},
-	};
+    static std::unordered_map<std::string, api::power::mode> modes{
+        {"performance", api::power::mode::MODE_BEST_PERFORMANCE},
+        {"balance", api::power::mode::MODE_BALANCE},
+        {"battery", api::power::mode::MODE_BETTER_BATTERY},
+    };
 
-	auto arg = app_args.get<std::string>("--mode");
-	if (arg == "")
-		return std::nullopt;
-	return modes[arg];
+    auto arg = app_args.get<std::string>("--mode");
+    if (arg == "")
+        return std::nullopt;
+    return modes[arg];
 }
 
 bool has_open_edit_profile()
 {
-	return app_args.get<bool>("--edit-profile");
+    return app_args.get<bool>("--edit-profile");
 }
 
 bool has_toggle_psr()
 {
-	return app_args.get<bool>("--toggle-psr");
+    return app_args.get<bool>("--toggle-psr");
 }
 
 bool has_toggle_auto_start()
 {
-	return app_args.get<bool>("--toggle-auto-start");
+    return app_args.get<bool>("--toggle-auto-start");
 }
 
 bool has_toggle_mpo()
 {
-	return app_args.get<bool>("--toggle-mpo");
+    return app_args.get<bool>("--toggle-mpo");
 }
 
 bool from_restart()
 {
-	return app_args.get<bool>("--from-restart") && !app_args.get<bool>("--ignore-from-restart");
+    return app_args.get<bool>("--from-restart") && !app_args.get<bool>("--ignore-from-restart");
 }
 
 } // namespace app::args
