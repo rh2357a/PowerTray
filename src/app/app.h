@@ -6,7 +6,6 @@
 namespace app {
 
 void run();
-void mainloop();
 
 LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 

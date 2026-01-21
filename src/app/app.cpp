@@ -36,6 +36,8 @@ namespace app {
 
 HWND handle = nullptr;
 HMENU main_menu = nullptr, profile_menu = nullptr;
+UINT wm_taskbar_created = 0;
+NOTIFYICONDATA notify_data;
 
 const auto version = api::windows::get_version();
 const auto is_overlay_scheme_supported = version.major >= 10 && version.build >= 17763;  // windows 10 1809
@@ -45,6 +47,8 @@ std::vector<api::power::profile> recent_profiles;
 
 void run()
 {
+    wm_taskbar_created = ::RegisterWindowMessage(L"TaskbarCreated");
+
     // 시작 옵션 처리
     {
         bool has_action = false;
@@ -113,33 +117,28 @@ void run()
 
     handle = ::CreateWindowEx(0, wc.lpszClassName, app_name.c_str(), 0, 0, 0, 0, 0, 0, 0, 0, wc.hInstance);
 
-    NOTIFYICONDATA nid{};
-    nid.cbSize = sizeof(NOTIFYICONDATA);
-    nid.hWnd = handle;
-    nid.uID = 1;
-    nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
-    nid.uCallbackMessage = WM_SYSTEM_TRAY;
-    nid.hIcon = (HICON)::LoadImage(::GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+    notify_data.cbSize = sizeof(NOTIFYICONDATA);
+    notify_data.hWnd = handle;
+    notify_data.uID = 1;
+    notify_data.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+    notify_data.uCallbackMessage = WM_SYSTEM_TRAY;
+    notify_data.hIcon = (HICON)::LoadImage(::GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
     auto tip = utils::strings::to_wstring(APP_DESCRIPTION);
-    utils::strings::wstring_copy(nid.szTip, tip);
+    utils::strings::wstring_copy(notify_data.szTip, tip);
 
-    ::Shell_NotifyIcon(NIM_ADD, &nid);
+    ::Shell_NotifyIcon(NIM_ADD, &notify_data);
 
     on_menu_create();
-    mainloop();
 
-    ::Shell_NotifyIcon(NIM_DELETE, &nid);
-}
-
-void mainloop()
-{
     MSG msg{};
     while (::GetMessage(&msg, nullptr, 0, 0))
     {
         ::TranslateMessage(&msg);
         ::DispatchMessage(&msg);
     }
+
+    ::Shell_NotifyIcon(NIM_DELETE, &notify_data);
 }
 
 LRESULT wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -152,6 +151,12 @@ LRESULT wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     else if (msg == WM_DESTROY)
     {
         on_app_exit();
+        return 0;
+    }
+    else if (msg == wm_taskbar_created)
+    {
+        ::Shell_NotifyIcon(NIM_ADD, &notify_data);
+        return 0;
     }
 
     return ::DefWindowProc(hwnd, msg, wparam, lparam);
